@@ -10,8 +10,13 @@ const adminRoutes  = require("./routes/admin");
 const app = express();
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
+// app.use(cors({
+//   origin: process.env.FRONTEND_URL || "*",  // lock this down in production
+// }));
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*",  // lock this down in production
+  origin: "*",
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-admin-password"],
 }));
 app.use(express.json());
 
