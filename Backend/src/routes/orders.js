@@ -8,10 +8,22 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Razorpay instance — keys come from .env
-const razorpay = new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// const razorpay = new Razorpay({
+//   key_id:     process.env.RAZORPAY_KEY_ID,
+//   key_secret: process.env.RAZORPAY_KEY_SECRET,
+// });
+// Razorpay instance — keys come from .env
+let razorpay = null;
+function getRazorpay() {
+  if (!razorpay) {
+    razorpay = new Razorpay({
+      key_id:     process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+  }
+  return razorpay;
+}
+
 
 // Helper: generate readable order number e.g. KM-20240602-0042
 async function generateOrderNumber() {
