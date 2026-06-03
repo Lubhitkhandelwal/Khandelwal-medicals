@@ -98,19 +98,44 @@ router.post("/products", async (req, res, next) => {
 });
 
 // PATCH /admin/products/:id   — update price, stock, active status
+// router.patch("/products/:id", async (req, res, next) => {
+//   try {
+//     const { price, mrp, stock, isActive, description, imageUrl } = req.body;
+
+//     const product = await prisma.product.update({
+//       where: { id: req.params.id },
+//       data: {
+//         ...(price     !== undefined && { price }),
+//         ...(mrp       !== undefined && { mrp }),
+//         ...(stock     !== undefined && { stock }),
+//         ...(isActive  !== undefined && { isActive }),
+//         ...(description !== undefined && { description }),
+//         ...(imageUrl  !== undefined && { imageUrl }),
+//       },
+//     });
+
+//     res.json({ product });
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 router.patch("/products/:id", async (req, res, next) => {
   try {
-    const { price, mrp, stock, isActive, description, imageUrl } = req.body;
+    const { name, brand, category, price, mrp, stock, isActive, description, unit, imageUrl } = req.body;
 
     const product = await prisma.product.update({
       where: { id: req.params.id },
       data: {
-        ...(price     !== undefined && { price }),
-        ...(mrp       !== undefined && { mrp }),
-        ...(stock     !== undefined && { stock }),
-        ...(isActive  !== undefined && { isActive }),
+        ...(name        !== undefined && { name }),
+        ...(brand       !== undefined && { brand }),
+        ...(category    !== undefined && { category }),
+        ...(price       !== undefined && { price }),
+        ...(mrp         !== undefined && { mrp }),
+        ...(stock       !== undefined && { stock }),
+        ...(isActive    !== undefined && { isActive }),
         ...(description !== undefined && { description }),
-        ...(imageUrl  !== undefined && { imageUrl }),
+        ...(unit        !== undefined && { unit }),
+        ...(imageUrl    !== undefined && { imageUrl }),
       },
     });
 
