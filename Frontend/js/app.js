@@ -19,7 +19,8 @@ let CATEGORIES = ['All'];
 
 async function loadProducts() {
   try {
-    const res = await fetch('http://localhost:4000/api/products');
+    // const res = await fetch('http://localhost:4000/api/products');
+    const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/products');
     const data = await res.json();
     // Map backend fields to frontend shape
     PRODUCTS = data.products.map(p => ({
@@ -433,7 +434,7 @@ async function placeOrder() {
   const items = Object.keys(cart).map(id => ({ productId: id, quantity: cart[id] }));
 
   try {
-    const res = await fetch('http://localhost:4000/api/orders', {
+    const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
