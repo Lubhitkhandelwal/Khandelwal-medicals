@@ -472,22 +472,32 @@ let allProducts = [];
 let orderFilter = 'ALL';
 
 /* ── AUTH ── */
-function login() {
-  const pw = document.getElementById('passwordInput').value.trim();
-  if (!pw) return;
-  adminToken = pw;
-  apiFetch('/admin/orders?take=1')
-    .then(() => {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      localStorage.setItem('adminToken', pw);
-      initApp();
-    })
-    .catch(() => {
-      adminToken = '';
-      document.getElementById('loginError').style.display = 'block';
-    });
-}
+// function login() {
+//   const pw = document.getElementById('passwordInput').value.trim();
+//   if (!pw) return;
+//   adminToken = pw;
+//   apiFetch('/admin/orders?take=1')
+//     .then(() => {
+//       document.getElementById('loginScreen').style.display = 'none';
+//       document.getElementById('app').style.display = 'block';
+//       localStorage.setItem('adminToken', pw);
+//       initApp();
+//     })
+//     .catch(() => {
+//       adminToken = '';
+//       document.getElementById('loginError').style.display = 'block';
+//     });
+// }
+function login() {} // unused
+
+window.addEventListener('DOMContentLoaded', () => {
+  adminToken = 'medicals123';
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initApp();
+  document.getElementById('dashDate').textContent =
+    new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+});
 
 function logout() {
   adminToken = '';
