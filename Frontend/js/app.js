@@ -75,7 +75,10 @@ async function loadProducts() {
 const CAT_ICONS = {
   'All':'🏪','Pain Relief':'💊','Vitamins':'🌿','Cold & Cough':'🌬️',
   'Digestion':'⚡','Skin Care':'✨','First Aid':'🩹','Devices':'🩺',
-  'Eye Care':'👁️','Hygiene':'🧴',
+  'Eye Care':'👁️','Hygiene':'🧴','Cosmetics':'💄',
+'Facewash':'🧼',
+'Moisturizer':'🧴',
+'Serum':'💧',
 };
 
 /* ════════════════════════════════════════════════════════════════
