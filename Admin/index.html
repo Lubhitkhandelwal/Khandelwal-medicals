@@ -705,18 +705,49 @@ async function openOrderModal(orderId) {
         <span>${i.productName} × ${i.quantity || i.qty}</span>
         <span>₹${i.price || i.totalPrice}</span>
       </div>`).join('');
+
+    // Prescription items
+    const rxItems = (o.rxItems || []);
+    const rxHtml = rxItems.map(rx => `
+      <div style="background:#f3e8ff;border-radius:10px;padding:12px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:18px">📋</span>
+          <strong style="font-size:14px;color:#7c3aed">Prescription Order</strong>
+          <span class="badge badge-purple" style="margin-left:auto">Price TBD</span>
+        </div>
+        <p style="font-size:13px;color:#6b7280;margin-bottom:6px">
+          <strong>Days required:</strong> ${rx.daysRequired} days
+        </p>
+        ${rx.notes ? `<p style="font-size:13px;color:#6b7280;margin-bottom:6px"><strong>Notes:</strong> ${rx.notes}</p>` : ''}
+        <a href="${rx.prescriptionUrl}" target="_blank"
+          style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
+          color:white;background:#7c3aed;padding:7px 14px;border-radius:8px;text-decoration:none;margin-top:4px">
+          🖼 View Prescription Image →
+        </a>
+      </div>`).join('');
     document.getElementById('orderModalBody').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">CUSTOMER</p><p style="font-weight:600">${custName}</p></div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">PHONE</p><p>${custPhone}</p></div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">FULFILLMENT</p><p>${o.fulfillment === 'delivery' ? '🚚 Home Delivery' : '🏪 Store Pickup'}</p></div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">PAYMENT</p><p>${(o.paymentMethod||'').toUpperCase()} — ${o.paymentStatus||'pending'}</p></div>
-        ${(o.deliveryAddress||o.address) ? '<div style="grid-column:1/-1"><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">ADDRESS</p><p>' + (o.deliveryAddress||o.address) + '</p></div>' : ''}
+        ${(o.deliveryAddress||o.address) ? `
+          <div style="grid-column:1/-1">
+            <p style="font-size:11px;color:#9ca3af;margin-bottom:4px">ADDRESS</p>
+            <p>${o.deliveryAddress||o.address}</p>
+            ${o.latitude && o.longitude ? `
+              <a href="https://www.google.com/maps?q=${o.latitude},${o.longitude}"
+              target="_blank"
+              style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;font-size:12px;font-weight:600;color:white;background:#1D9E75;padding:5px 12px;border-radius:6px;text-decoration:none">
+              📍 Open in Google Maps
+              </a>` : ''}
+          </div>` : ''}
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">STATUS</p>${statusBadge(o.status)}</div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">DATE</p><p>${formatDate(o.createdAt)}</p></div>
       </div>
       <div class="order-detail">
         ${itemsHtml}
+        ${rxHtml}
         <div class="order-detail-row" style="color:#6b7280;margin-top:8px">
           <span>Delivery charge</span><span>₹${o.deliveryCharge}</span>
         </div>

@@ -608,3 +608,62 @@ footer strong { color: var(--gray-600, #4b5563); font-weight: 600; }
   .product-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
   .toggle-btn { padding: 7px 10px; font-size: 12px; }
 }
+
+/* ── Prescription Banner ─────────────────────────────────────── */
+.rx-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #085041 0%, #1D9E75 100%);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.15s;
+  box-shadow: 0 2px 12px rgba(29,158,117,0.25);
+}
+.rx-banner:hover { opacity: 0.93; transform: translateY(-1px); }
+.rx-banner:active { transform: scale(0.99); }
+.rx-banner-left { display: flex; align-items: center; gap: 12px; }
+.rx-icon { font-size: 28px; }
+.rx-banner-title { font-size: 15px; font-weight: 600; color: white; line-height: 1.2; }
+.rx-banner-sub { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+.rx-banner-btn {
+  font-size: 13px; font-weight: 600; color: white;
+  background: rgba(255,255,255,0.2);
+  padding: 7px 14px; border-radius: 100px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.rx-upload-area {
+  border: 2px dashed var(--gray-200);
+  border-radius: var(--radius);
+  padding: 1.5rem 1rem;
+  text-align: center; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--gray-50);
+  min-height: 120px;
+  display: flex; align-items: center; justify-content: center;
+}
+.rx-upload-area:hover { border-color: var(--brand-400); background: var(--brand-50); }
+.rx-upload-area.has-file { border-color: var(--brand-400); background: var(--brand-50); border-style: solid; }
+.rx-days-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.rx-day-btn {
+  padding: 7px 16px; border-radius: 100px;
+  border: 1.5px solid var(--gray-200);
+  font-size: 13px; font-weight: 500;
+  color: var(--gray-600, #4b5563);
+  background: white; cursor: pointer;
+  transition: all 0.15s;
+}
+.rx-day-btn:hover { border-color: var(--brand-400); color: var(--brand-600); }
+.rx-day-btn.active { background: var(--brand-400); color: white; border-color: var(--brand-400); }
+.ci-rx-price {
+  font-size: 12px; color: #7c3aed; font-weight: 600;
+  background: #f3e8ff; padding: 2px 8px; border-radius: 100px;
+}
+@media(max-width:480px){
+  .rx-banner { padding: 0.875rem 1rem; }
+  .rx-banner-title { font-size: 14px; }
+  .rx-banner-sub { font-size: 11px; }
+  .rx-icon { font-size: 22px; }
+  .rx-days-grid { gap: 6px; }
+  .rx-day-btn { padding: 6px 12px; font-size: 12px; }
+}

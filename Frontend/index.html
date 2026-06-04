@@ -48,7 +48,7 @@
 
   <!-- Hero -->
   <section class="hero">
-    <p class="hero-license">✅ Drug License · Rajasthan Pharmacy</p>
+    <p class="hero-license"><b>Khandelwal Medicals</b></p>
     <h1>Your trusted<br/>neighbourhood pharmacy</h1>
     <p>OTC medicines, vitamins &amp; healthcare products — no prescription required. Order online, get it delivered or pick up from store.</p>
     <div class="hero-pills">
@@ -70,6 +70,18 @@
       </button>
     </div>
     <p class="fulfillment-note" id="fulfillmentNote">₹20 charge · Free above ₹250</p>
+  </div>
+
+  <!-- Prescription Banner -->
+  <div class="rx-banner" onclick="openRxModal()">
+    <div class="rx-banner-left">
+      <span class="rx-icon">📋</span>
+      <div>
+        <p class="rx-banner-title">Have a prescription?</p>
+        <p class="rx-banner-sub">Upload it and we'll add it to your cart — price calculated after packing</p>
+      </div>
+    </div>
+    <span class="rx-banner-btn">Upload →</span>
   </div>
 
   <!-- Search bar -->
@@ -114,6 +126,9 @@
   <div class="cart-footer hidden" id="cartFooter">
     <div class="cart-row"><span>Subtotal (MRP)</span><span id="totalMrp">₹0</span></div>
     <div class="cart-savings"><span>💚 Your savings</span><span id="totalSavings">−₹0</span></div>
+    <div id="rxCartNote" class="hidden" style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;padding:8px 12px;font-size:12px;color:#7c3aed;margin-bottom:6px">
+      📋 Prescription price will be added after packing
+    </div>
     <div class="cart-row" id="deliveryRow"><span>Delivery charge</span><span id="deliveryAmt">₹20</span></div>
     <div class="cart-total"><span>Total payable</span><span id="grandTotal">₹0</span></div>
     <button class="checkout-btn" onclick="openCheckout()">Proceed to checkout →</button>
@@ -165,6 +180,8 @@
           <label for="custAddress">Delivery address *</label>
           <textarea id="custAddress" placeholder="House/Flat no., Street, Area, Kumher…"></textarea>
           <span class="form-error hidden" id="errAddress">Address is required</span>
+          <button type="button" id="locBtn" onclick="useMyLocation()" style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:13px;color:#1D9E75;font-weight:500;padding:7px 12px;border:1.5px solid #1D9E75;border-radius:8px;background:white;cursor:pointer"> Use my location</button>
+          <p id="locStatus" style="font-size:12px;color:#6b7280;margin-top:4px"></p>
         </div>
         <div class="form-group">
           <label for="custPin">Pincode *</label>
@@ -229,12 +246,66 @@
   </div>
 </div>
 
+<!-- ── PRESCRIPTION MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="rxOverlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h2>📋 Upload Prescription</h2>
+      <button class="icon-btn" onclick="closeRxModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="rx-upload-area" id="rxUploadArea" onclick="document.getElementById('rxFileInput').click()">
+        <input type="file" id="rxFileInput" accept="image/*,.pdf" style="display:none" onchange="handleRxFile(event)" />
+        <div id="rxUploadPlaceholder">
+          <div style="font-size:32px;margin-bottom:8px">📄</div>
+          <p style="font-size:14px;font-weight:600;color:var(--gray-700)">Tap to upload prescription</p>
+          <p style="font-size:12px;color:var(--gray-400);margin-top:4px">JPG, PNG or PDF · Max 5MB</p>
+        </div>
+        <div id="rxUploadPreview" class="hidden" style="text-align:center">
+          <img id="rxPreviewImg" src="" alt="Preview" style="max-height:130px;max-width:100%;border-radius:8px;object-fit:contain" />
+          <p id="rxFileName" style="font-size:12px;color:var(--gray-500);margin-top:6px"></p>
+          <button onclick="removeRxFile(event)" style="font-size:12px;color:var(--red);margin-top:6px;padding:3px 10px;border:1px solid #fecaca;border-radius:100px;background:#fef2f2;cursor:pointer">✕ Remove</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Days of medicines required *</label>
+        <div class="rx-days-grid">
+          <button class="rx-day-btn" onclick="selectRxDays(7,this)">7 days</button>
+          <button class="rx-day-btn" onclick="selectRxDays(15,this)">15 days</button>
+          <button class="rx-day-btn active" onclick="selectRxDays(30,this)">30 days</button>
+          <button class="rx-day-btn" onclick="selectRxDays(60,this)">60 days</button>
+          <button class="rx-day-btn" onclick="selectRxDays(90,this)">90 days</button>
+          <button class="rx-day-btn" onclick="selectRxDays('custom',this)">Custom</button>
+        </div>
+        <input type="number" id="rxCustomDays" placeholder="Enter days" min="1" max="365" class="hidden"
+          style="margin-top:8px;width:140px;padding:8px 12px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:14px;font-family:inherit" />
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;line-height:1.5">
+        <span>ℹ️</span>
+        <p>Price will be calculated after our pharmacist packs your medicines. You can also add regular products to the same cart.</p>
+      </div>
+
+      <div class="form-group">
+        <label>Additional notes (optional)</label>
+        <textarea id="rxNotes" placeholder="Specific brands, generic ok, allergies…" style="min-height:56px"></textarea>
+      </div>
+
+      <button class="place-btn" id="rxAddBtn" onclick="addRxToCart()">
+        📋 Add prescription to cart →
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ── FOOTER ──────────────────────────────────────────────────── -->
 <footer>
   <p><strong>Khandelwal Medicals — Licensed Pharmacy</strong></p>
   <p>Khandelwal Medicals, Sonkh Road, Kumher — 321201</p>
-  <p>Drug License: [Your License No.] · GST: [Your GSTIN] · +91 63789 66072</p>
-  <p style="margin-top:8px;font-size:12px">You can visit store for better prescriptions.</p>
+  <!-- <p>Drug License: [Your License No.] · GST: [Your GSTIN] · +91 63789 66072</p> -->
+  <p style="margin-top:8px;font-size:12px">You can visit store for any queries or contact us: <br> <b>+91 63789 66072</b>   <b>+91 93520 29567</b></p>
 </footer>
 <script src="js/app.js"></script>
 </body>

@@ -2,8 +2,6 @@
    DATA
    ════════════════════════════════════════════════════════════════ */
 
-// ── Store config ──────────────────────────────────────────────
-// TODO (backend): Load this from GET /api/store-config
 const STORE = {
   name: 'Khandelwal Medicals',
   address: 'Khandelwal Medicals, Sonkh Road, Kumher — 321201',
@@ -87,13 +85,18 @@ const CAT_ICONS = {
 
 let cart         = {};          // { productId: qty }
 let fulfillment  = 'delivery';  // 'delivery' | 'pickup'
+let locationLat = null;
+let locationLng = null;
 let activeCategory = 'All';
 
 /* ════════════════════════════════════════════════════════════════
    CART HELPERS
    ════════════════════════════════════════════════════════════════ */
 
-function itemCount()    { return Object.values(cart).reduce((s,q) => s+q, 0); }
+// function itemCount()    { return Object.values(cart).reduce((s,q) => s+q, 0); }
+function itemCount()    { return Object.values(cart).reduce((s,q) => s + (q?.isRx ? 1 : q), 0); }
+function getRxItems()   { return Object.entries(cart).filter(([,v]) => v?.isRx); }
+function hasRxItem()    { return getRxItems().length > 0; }
 function subtotal()     { return PRODUCTS.reduce((s,p) => s + (cart[p.id]||0)*p.price, 0); }
 function mrpTotal()     { return PRODUCTS.reduce((s,p) => s + (cart[p.id]||0)*p.mrp, 0); }
 function savings()      { return mrpTotal() - subtotal(); }
@@ -334,6 +337,25 @@ function renderCartItems() {
   footer.classList.remove('hidden');
 
   container.innerHTML = keys.map(id => {
+    // Prescription item
+    if (cart[id]?.isRx) {
+      const rx = cart[id];
+      return `
+        <div class="cart-item">
+          <div class="ci-icon" style="background:#f3e8ff">📋</div>
+          <div class="ci-info">
+            <p class="ci-name">Prescription Medicines</p>
+            <p class="ci-sub">${rx.daysRequired} days supply${rx.notes ? ' · ' + rx.notes : ''}</p>
+            <div style="margin-top:4px">
+              <a href="${rx.prescriptionUrl}" target="_blank" style="font-size:11px;color:var(--brand-600);text-decoration:underline">View prescription →</a>
+            </div>
+            <div class="ci-bottom" style="margin-top:6px">
+              <span class="ci-rx-price">Price TBD after packing</span>
+              <button class="ci-qty-btn" onclick="changeQty('${id}',-1)" style="background:#fef2f2;color:var(--red)">🗑</button>
+            </div>
+          </div>
+        </div>`;
+    }
     const p   = PRODUCTS.find(x => x.id === id);
     const qty = cart[id];
     if (!p) return '';
@@ -361,7 +383,8 @@ function renderCartItems() {
   const dc = deliveryCharge();
   document.getElementById('deliveryAmt').textContent   =
     dc === 0 ? (fulfillment==='pickup' ? 'FREE (pickup)' : 'FREE') : `₹${dc}`;
-  document.getElementById('grandTotal').textContent    = `₹${grandTotal()}`;
+  document.getElementById('grandTotal').textContent = hasRxItem() ? `₹${grandTotal()} + Rx` : `₹${grandTotal()}`;
+  document.getElementById('rxCartNote').classList.toggle('hidden', !hasRxItem());
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -450,6 +473,8 @@ async function placeOrder() {
         fulfillment,
         deliveryAddress: fulfillment === 'delivery' ? `${address}, ${pincode}` : null,
         paymentMethod:   payment,
+        latitude:        locationLat,
+        longitude:       locationLng,
       }),
     });
     const data = await res.json();
@@ -509,6 +534,162 @@ function syncSearch(val) {
   document.getElementById('clearSearch').classList.toggle('hidden', !val);
   renderProducts();
 }
+
+/* ════════════════════════════════════════════════════════════════
+   LOCATION
+   ════════════════════════════════════════════════════════════════ */
+function useMyLocation() {
+  const btn    = document.getElementById('locBtn');
+  const status = document.getElementById('locStatus');
+
+  if (!navigator.geolocation) {
+    status.textContent = '❌ Location not supported on this browser';
+    return;
+  }
+
+  btn.textContent = '⏳ Getting location…';
+  btn.disabled    = true;
+  status.textContent = '';
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      locationLat = latitude;
+      locationLng = longitude;
+      status.textContent = '🔄 Converting to address…';
+
+      try {
+        // Free reverse geocoding — no API key needed
+        const res  = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data = await res.json();
+
+        // Build a readable address from parts
+        const a = data.address;
+        const parts = [
+          a.house_number,
+          a.road || a.pedestrian || a.street,
+          a.neighbourhood || a.suburb,
+          a.city || a.town || a.village || a.county,
+          a.state,
+        ].filter(Boolean);
+
+        const fullAddress = parts.join(', ');
+        const pin         = a.postcode || '';
+
+        document.getElementById('custAddress').value = fullAddress;
+        if (pin) document.getElementById('custPin').value = pin;
+
+        status.style.color   = '#16a34a';
+        status.textContent   = '✅ Location filled! Please verify the address.';
+      } catch (err) {
+        status.style.color  = '#ef4444';
+        status.textContent  = '❌ Could not convert location. Please type manually.';
+      }
+
+      btn.textContent = '📍 Use my location';
+      btn.disabled    = false;
+    },
+    (err) => {
+      const msgs = {
+        1: '❌ Location permission denied. Please allow location access.',
+        2: '❌ Location unavailable. Please type manually.',
+        3: '❌ Location request timed out. Please try again.',
+      };
+      status.style.color  = '#ef4444';
+      status.textContent  = msgs[err.code] || '❌ Could not get location.';
+      btn.textContent     = '📍 Use my location';
+      btn.disabled        = false;
+    },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PRESCRIPTION
+   ════════════════════════════════════════════════════════════════ */
+
+const CLOUDINARY_CLOUD  = 'dks0tcara';
+const CLOUDINARY_PRESET = 'km_prescriptions';
+let rxDays = 30;
+let rxFile = null;
+
+function openRxModal() {
+  document.getElementById('rxOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeRxModal() {
+  document.getElementById('rxOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleRxFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); return; }
+  rxFile = file;
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = e => { document.getElementById('rxPreviewImg').src = e.target.result; document.getElementById('rxPreviewImg').classList.remove('hidden'); };
+    reader.readAsDataURL(file);
+  } else { document.getElementById('rxPreviewImg').classList.add('hidden'); }
+  document.getElementById('rxFileName').textContent = file.name;
+  document.getElementById('rxUploadPlaceholder').classList.add('hidden');
+  document.getElementById('rxUploadPreview').classList.remove('hidden');
+  document.getElementById('rxUploadArea').classList.add('has-file');
+}
+function removeRxFile(e) {
+  e.stopPropagation();
+  rxFile = null;
+  document.getElementById('rxFileInput').value = '';
+  document.getElementById('rxUploadPlaceholder').classList.remove('hidden');
+  document.getElementById('rxUploadPreview').classList.add('hidden');
+  document.getElementById('rxUploadArea').classList.remove('has-file');
+  document.getElementById('rxUploadArea').style.borderColor = '';
+}
+function selectRxDays(days, el) {
+  document.querySelectorAll('.rx-day-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  rxDays = days;
+  const ci = document.getElementById('rxCustomDays');
+  if (days === 'custom') {
+    ci.classList.remove('hidden'); ci.focus(); rxDays = null;
+    ci.oninput = () => { rxDays = parseInt(ci.value) || null; };
+  } else { ci.classList.add('hidden'); }
+}
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CLOUDINARY_PRESET);
+  fd.append('folder', 'prescriptions');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, { method:'POST', body:fd });
+  if (!res.ok) throw new Error('Image upload failed');
+  return (await res.json()).secure_url;
+}
+async function addRxToCart() {
+  if (!rxFile) { document.getElementById('rxUploadArea').style.borderColor = 'var(--red)'; return; }
+  if (!rxDays) { alert('Please select number of days'); return; }
+  const btn = document.getElementById('rxAddBtn');
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  try {
+    const url   = await uploadToCloudinary(rxFile);
+    const notes = document.getElementById('rxNotes').value.trim();
+    cart['RX_' + Date.now()] = { isRx:true, prescriptionUrl:url, daysRequired:rxDays, notes };
+    closeRxModal(); openCart(); refresh();
+    rxFile = null; rxDays = 30;
+    document.getElementById('rxFileInput').value = '';
+    document.getElementById('rxUploadPlaceholder').classList.remove('hidden');
+    document.getElementById('rxUploadPreview').classList.add('hidden');
+    document.getElementById('rxUploadArea').classList.remove('has-file');
+    document.getElementById('rxUploadArea').style.borderColor = '';
+    document.getElementById('rxNotes').value = '';
+    document.querySelectorAll('.rx-day-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.rx-day-btn')[2].classList.add('active');
+  } catch(err) { alert('Upload failed: ' + err.message); }
+  finally { btn.disabled = false; btn.textContent = '📋 Add prescription to cart →'; }
+}
+document.getElementById('rxOverlay').addEventListener('click', function(e) { if (e.target === this) closeRxModal(); });
 
 /* ════════════════════════════════════════════════════════════════
    INIT

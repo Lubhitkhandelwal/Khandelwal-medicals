@@ -8,11 +8,6 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // Razorpay instance — keys come from .env
-// const razorpay = new Razorpay({
-//   key_id:     process.env.RAZORPAY_KEY_ID,
-//   key_secret: process.env.RAZORPAY_KEY_SECRET,
-// });
-// Razorpay instance — keys come from .env
 let razorpay = null;
 function getRazorpay() {
   if (!razorpay) {
@@ -33,41 +28,50 @@ async function generateOrderNumber() {
 }
 
 // ─── POST /api/orders ─────────────────────────────────────────────────────────
-// Body: { customer, items, fulfillment, deliveryAddress, paymentMethod }
+// Body: { customer, items, rxItems, fulfillment, deliveryAddress, paymentMethod }
 router.post("/", async (req, res, next) => {
   try {
-    const { customer, items, fulfillment, deliveryAddress, paymentMethod } = req.body;
+    const { customer, items, rxItems, fulfillment, deliveryAddress, paymentMethod } = req.body;
 
     // 1. Validate required fields
     if (!customer?.name || !customer?.phone) {
       return res.status(400).json({ error: "Customer name and phone are required" });
     }
-    if (!items?.length) {
+    if (!items?.length && !rxItems?.length) {
       return res.status(400).json({ error: "Cart is empty" });
     }
     if (fulfillment === "delivery" && !deliveryAddress) {
       return res.status(400).json({ error: "Delivery address is required" });
     }
 
-    // 2. Load products from DB and validate stock
-    const productIds = items.map((i) => i.productId);
-    const dbProducts = await prisma.product.findMany({
-      where: { id: { in: productIds }, isActive: true, requiresRx: false },
-    });
+    // 2. Load products from DB and validate stock (skip if only rx order)
+    let subtotal = 0;
+    let productMap = {};
 
-    if (dbProducts.length !== productIds.length) {
-      return res.status(400).json({ error: "One or more products are unavailable" });
-    }
+    if (items?.length) {
+      const productIds = items.map((i) => i.productId);
+      const dbProducts = await prisma.product.findMany({
+        where: { id: { in: productIds }, isActive: true, requiresRx: false },
+      });
 
-    const productMap = Object.fromEntries(dbProducts.map((p) => [p.id, p]));
-
-    for (const item of items) {
-      const p = productMap[item.productId];
-      if (p.stock < item.quantity) {
-        return res.status(400).json({
-          error: `Insufficient stock for ${p.name} (available: ${p.stock})`,
-        });
+      if (dbProducts.length !== productIds.length) {
+        return res.status(400).json({ error: "One or more products are unavailable" });
       }
+
+      productMap = Object.fromEntries(dbProducts.map((p) => [p.id, p]));
+
+      for (const item of items) {
+        const p = productMap[item.productId];
+        if (p.stock < item.quantity) {
+          return res.status(400).json({
+            error: `Insufficient stock for ${p.name} (available: ${p.stock})`,
+          });
+        }
+      }
+
+      subtotal = items.reduce((sum, item) => {
+        return sum + productMap[item.productId].price * item.quantity;
+      }, 0);
     }
 
     // 3. Calculate totals
@@ -103,8 +107,11 @@ router.post("/", async (req, res, next) => {
         subtotal,
         deliveryCharge,
         total,
+        latitude:  req.body.latitude  || null,
+        longitude: req.body.longitude || null,
+        rxItems:   rxItems || [],
         items: {
-          create: items.map((item) => {
+          create: (items || []).map((item) => {
             const p = productMap[item.productId];
             return {
               productId:    p.id,
@@ -121,7 +128,7 @@ router.post("/", async (req, res, next) => {
     });
 
     // 6. Deduct stock
-    for (const item of items) {
+    for (const item of (items || [])) {
       await prisma.product.update({
         where: { id: item.productId },
         data:  { stock: { decrement: item.quantity } },
@@ -130,7 +137,7 @@ router.post("/", async (req, res, next) => {
 
     // 7. If online payment (UPI / card) → create Razorpay order
     if (paymentMethod !== "cod") {
-      const rzpOrder = await razorpay.orders.create({
+      const rzpOrder = await getRazorpay().orders.create({
         amount:   Math.round(total * 100), // paise
         currency: "INR",
         receipt:  order.orderNumber,
@@ -172,12 +179,10 @@ router.post("/", async (req, res, next) => {
 });
 
 // ─── POST /api/orders/verify-payment ─────────────────────────────────────────
-// Called after Razorpay checkout succeeds on frontend
 router.post("/verify-payment", async (req, res, next) => {
   try {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
 
-    // Verify signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -188,7 +193,6 @@ router.post("/verify-payment", async (req, res, next) => {
       return res.status(400).json({ error: "Payment verification failed" });
     }
 
-    // Update order
     await prisma.order.update({
       where: { id: orderId },
       data: {

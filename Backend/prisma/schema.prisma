@@ -51,6 +51,9 @@ model Order {
 
   fulfillment     String      // "delivery" | "pickup"
   deliveryAddress String?     // null for pickup
+  latitude        Float?      // GPS coordinates for map link
+  longitude       Float?
+  rxItems         Json        @default("[]")
   paymentMethod   String      // "upi" | "cod" | "card"
   paymentStatus   String      @default("pending")   // pending | paid | failed
   razorpayOrderId String?
