@@ -510,17 +510,17 @@ function logout() {
   location.reload();
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('adminToken');
-  if (saved) {
-    adminToken = saved;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    initApp();
-  }
-  document.getElementById('dashDate').textContent =
-    new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-});
+// window.addEventListener('DOMContentLoaded', () => {
+//   const saved = localStorage.getItem('adminToken');
+//   if (saved) {
+//     adminToken = saved;
+//     document.getElementById('loginScreen').style.display = 'none';
+//     document.getElementById('app').style.display = 'block';
+//     initApp();
+//   }
+//   document.getElementById('dashDate').textContent =
+//     new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+// });
 
 /* ── API HELPER ── */
 async function apiFetch(path, options = {}) {
@@ -598,8 +598,8 @@ async function loadDashboard() {
     }
     tbody.innerHTML = recent.map(o => `
       <tr>
-        <td><strong>${o.displayId}</strong></td>
-        <td>${o.customerName}</td>
+        <td><strong>${o.orderNumber}</strong></td>
+        <td>${o.customer?.name || '—'}</td>
         <td><strong>₹${o.total}</strong></td>
         <td>${o.fulfillment === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}</td>
         <td>${statusBadge(o.status)}</td>
@@ -644,9 +644,9 @@ function renderOrders() {
   }
   tbody.innerHTML = filtered.map(o => `
     <tr>
-      <td><strong style="font-family:monospace">${o.displayId}</strong></td>
-      <td>${o.customerName}</td>
-      <td style="color:#6b7280">${o.customerPhone}</td>
+      <td><strong style="font-family:monospace">${o.orderNumber}</strong></td>
+      <td>${o.customer?.name || '—'}</td>
+      <td style="color:#6b7280">${o.customer?.phone || '—'}</td>
       <td style="color:#6b7280">${(o.items||[]).length} item${(o.items||[]).length !== 1 ? 's' : ''}</td>
       <td><strong>₹${o.total}</strong></td>
       <td>${o.fulfillment === 'delivery' ? '🚚' : '🏪'} ${o.fulfillment}</td>
@@ -706,7 +706,7 @@ async function openOrderModal(orderId) {
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">PHONE</p><p>${custPhone}</p></div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">FULFILLMENT</p><p>${o.fulfillment === 'delivery' ? '🚚 Home Delivery' : '🏪 Store Pickup'}</p></div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">PAYMENT</p><p>${(o.paymentMethod||'').toUpperCase()} — ${o.paymentStatus||'pending'}</p></div>
-        ${o.address ? '<div style="grid-column:1/-1"><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">ADDRESS</p><p>' + o.address + (o.pincode ? ', ' + o.pincode : '') + '</p></div>' : ''}
+        ${(o.deliveryAddress||o.address) ? '<div style="grid-column:1/-1"><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">ADDRESS</p><p>' + (o.deliveryAddress||o.address) + '</p></div>' : ''}
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">STATUS</p>${statusBadge(o.status)}</div>
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">DATE</p><p>${formatDate(o.createdAt)}</p></div>
       </div>
