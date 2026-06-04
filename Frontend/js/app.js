@@ -483,20 +483,44 @@ async function placeOrder() {
   const payment  = document.querySelector('input[name="payment"]:checked')?.value || 'upi';
 
   // Build items array from cart
-  const items = Object.keys(cart).map(id => ({ productId: id, quantity: cart[id] }));
+  // const items = Object.keys(cart).map(id => ({ productId: id, quantity: cart[id] }));
+  // Separate normal products and prescription items
+
+const items = [];
+const rxItems = [];
+
+Object.entries(cart).forEach(([id, value]) => {
+
+  // Prescription item
+  if (value?.isRx) {
+    rxItems.push({
+      prescriptionUrl: value.prescriptionUrl,
+      daysRequired: value.daysRequired,
+      notes: value.notes || ""
+    });
+    return;
+  }
+
+  // Normal medicine
+  items.push({
+    productId: id,
+    quantity: value
+  });
+});
 
   try {
     const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customer:        { name, phone },
-        items,
-        fulfillment,
-        deliveryAddress: fulfillment === 'delivery' ? `${address}, ${pincode}` : null,
-        paymentMethod:   payment,
-        latitude:        locationLat,
-        longitude:       locationLng,
+      customer: { name, phone },
+      items,
+      rxItems,
+      fulfillment,
+      deliveryAddress: fulfillment === 'delivery'? `${address}, ${pincode}`: null,
+      paymentMethod: payment,
+      latitude: locationLat,
+      longitude: locationLng,
       }),
     });
     const data = await res.json();
@@ -512,9 +536,32 @@ async function placeOrder() {
 
 function showSuccess(orderId, name) {
   // Build items list
+  // const itemsHtml = Object.keys(cart).map(id => {
+  //   const p = PRODUCTS.find(x => x.id === id);
+  //   return `<div class="success-item"><span>${p.name} × ${cart[id]}</span><span>₹${p.price * cart[id]}</span></div>`;
+  // }).join('');
   const itemsHtml = Object.keys(cart).map(id => {
-    const p = PRODUCTS.find(x => x.id === id);
-    return `<div class="success-item"><span>${p.name} × ${cart[id]}</span><span>₹${p.price * cart[id]}</span></div>`;
+
+  // Prescription item
+  if (cart[id]?.isRx) {
+    return `
+      <div class="success-item">
+        <span>📋 Prescription Medicines</span>
+        <span>Price TBD</span>
+      </div>
+    `;
+  }
+
+  const p = PRODUCTS.find(x => String(x.id) === String(id));
+
+  if (!p) return '';
+
+  return `
+    <div class="success-item">
+      <span>${p.name} × ${cart[id]}</span>
+      <span>₹${p.price * cart[id]}</span>
+    </div>
+  `;
   }).join('');
 
   document.getElementById('successItemsList').innerHTML = itemsHtml;
