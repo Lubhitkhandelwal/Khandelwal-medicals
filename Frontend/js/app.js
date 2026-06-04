@@ -419,7 +419,11 @@ async function placeOrder() {
     const addr = document.getElementById('custAddress').value.trim();
     const pin  = document.getElementById('custPin').value.trim();
     setErr('custAddress', 'errAddress', !addr);
-    setErr('custPin', 'errPin', !/^\d{6}$/.test(pin));
+    // setErr('custPin', 'errPin', !/^\d{6}$/.test(pin));
+    const validPin = pin === '321201';
+    document.getElementById('errPin').textContent = 
+      !/^\d{6}$/.test(pin) ? 'Enter valid 6-digit pincode' : 'Sorry, we only deliver within Kumher (321201) currently';
+    setErr('custPin', 'errPin', !validPin);
   }
 
   if (!ok) return;
