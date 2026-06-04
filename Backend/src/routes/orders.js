@@ -221,4 +221,18 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
+// GET /api/orders/track/:phone
+router.get("/track/:phone", async (req, res, next) => {
+  try {
+    const orders = await prisma.order.findMany({
+      where: { customer: { phone: req.params.phone } },
+      orderBy: { createdAt: "desc" },
+      include: { items: true },
+    });
+    res.json({ orders });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
