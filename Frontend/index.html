@@ -66,7 +66,7 @@
     <p>OTC medicines, vitamins &amp; healthcare products — no prescription required. Order online, get it delivered or pick up from store.</p>
     <div class="hero-pills">
       <span class="hero-pill">🕐 Pickup in ~30 min</span>
-      <span class="hero-pill">🚚 Free delivery above ₹500</span>
+      <span class="hero-pill">🚚 Free delivery above ₹250</span>
       <span class="hero-pill">⏰ Mon–Sun, 6am – 9pm</span>
     </div>
   </section>
@@ -82,7 +82,7 @@
         🏪 Store Pickup
       </button>
     </div>
-    <p class="fulfillment-note" id="fulfillmentNote">₹40 charge · Free above ₹500</p>
+    <p class="fulfillment-note" id="fulfillmentNote">₹20 charge · Free above ₹250</p>
   </div>
 
   <!-- Categories -->
@@ -183,7 +183,7 @@
       <div>
         <p style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em">Payment Method</p>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <label class="pay-option selected" id="payUPI" onclick="selectPayment('upi', this)">
+          <!-- <label class="pay-option selected" id="payUPI" onclick="selectPayment('upi', this)">
             <input type="radio" name="payment" value="upi" checked />
             <span class="pay-option-label">📱 UPI / GPay / PhonePe</span>
           </label>
@@ -194,6 +194,20 @@
           <label class="pay-option" id="payCard" onclick="selectPayment('card', this)">
             <input type="radio" name="payment" value="card" />
             <span class="pay-option-label">💳 Credit / Debit card</span>
+          </label> -->
+          <label class="pay-option" id="payCOD" onclick="selectPayment('cod', this)" style="order:-1">
+            <input type="radio" name="payment" value="cod" checked />
+            <span class="pay-option-label" id="codLabel">💵 Cash on delivery</span>
+          </label>
+          <label class="pay-option" style="opacity:0.5;cursor:not-allowed;position:relative" id="payUPI">
+            <input type="radio" name="payment" value="upi" disabled />
+            <span class="pay-option-label">📱 UPI / GPay / PhonePe</span>
+            <span style="margin-left:auto;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;letter-spacing:0.05em">COMING SOON</span>
+          </label>
+          <label class="pay-option" style="opacity:0.5;cursor:not-allowed;position:relative" id="payCard">
+            <input type="radio" name="payment" value="card" disabled />
+            <span class="pay-option-label">💳 Credit / Debit card</span>
+            <span style="margin-left:auto;background:#ef4444;color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;letter-spacing:0.05em">COMING SOON</span>
           </label>
         </div>
       </div>

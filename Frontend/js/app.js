@@ -8,8 +8,8 @@ const STORE = {
   name: 'Khandelwal Medicals',
   address: 'Khandelwal Medicals, Sonkh Road, Kumher — 321201',
   phone: '+91 63789 66072',
-  deliveryCharge: 40,
-  freeDeliveryAbove: 500,
+  deliveryCharge: 20,
+  freeDeliveryAbove: 250,
 };
 
 // ── Products ──────────────────────────────────────────────────
@@ -482,9 +482,10 @@ function showSuccess(orderId, name) {
   document.getElementById('checkoutForm').classList.add('hidden');
   document.getElementById('successScreen').classList.remove('hidden');
 
-  // Clear cart
+  // Clear cart and close panel
   cart = {};
   refresh();
+  closeCart();
 }
 
 function finishOrder() {
