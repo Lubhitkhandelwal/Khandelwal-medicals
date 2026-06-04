@@ -707,24 +707,33 @@ async function openOrderModal(orderId) {
       </div>`).join('');
 
     // Prescription items
+    // Prescription items
     const rxItems = (o.rxItems || []);
-    const rxHtml = rxItems.map(rx => `
-      <div style="background:#f3e8ff;border-radius:10px;padding:12px;margin-top:8px">
+    const rxHtml = rxItems.map((rx, idx) => `
+      <div class="rx-price-box">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
           <span style="font-size:18px">📋</span>
           <strong style="font-size:14px;color:#7c3aed">Prescription Order</strong>
-          <span class="badge badge-purple" style="margin-left:auto">Price TBD</span>
+          <span class="badge badge-purple" style="margin-left:auto">${rx.agreedPrice ? '₹' + rx.agreedPrice : 'Price TBD'}</span>
         </div>
-        <p style="font-size:13px;color:#6b7280;margin-bottom:6px">
-          <strong>Days required:</strong> ${rx.daysRequired} days
-        </p>
-        ${rx.notes ? `<p style="font-size:13px;color:#6b7280;margin-bottom:6px"><strong>Notes:</strong> ${rx.notes}</p>` : ''}
+        <p style="font-size:13px;color:#6b7280;margin-bottom:4px"><strong>Days:</strong> ${rx.daysRequired} days</p>
+        ${rx.notes ? `<p style="font-size:13px;color:#6b7280;margin-bottom:4px"><strong>Notes:</strong> ${rx.notes}</p>` : ''}
         <a href="${rx.prescriptionUrl}" target="_blank"
           style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
           color:white;background:#7c3aed;padding:7px 14px;border-radius:8px;text-decoration:none;margin-top:4px">
-          🖼 View Prescription Image →
+          🖼 View Prescription →
         </a>
+        <div class="rx-price-row">
+          <input class="rx-price-input" id="rxPrice_${o.id}_${idx}"
+            type="number" placeholder="₹ Enter price"
+            value="${rx.agreedPrice || ''}" />
+          <button class="btn-save-rx" onclick="saveRxPrice('${o.id}', ${idx}, '${custPhone}', '${o.orderNumber}')">
+            💾 Save Price
+          </button>
+        </div>
+        <div id="rxWaBtn_${o.id}_${idx}" style="margin-top:8px">${rx.agreedPrice ? buildWaBtn(o, rx, idx) : ''}</div>
       </div>`).join('');
+
     document.getElementById('orderModalBody').innerHTML = `
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
         <div><p style="font-size:11px;color:#9ca3af;margin-bottom:2px">CUSTOMER</p><p style="font-weight:600">${custName}</p></div>
@@ -964,6 +973,42 @@ function showToast(msg, type) {
 
 document.getElementById('productModal').addEventListener('click', function(e) { if (e.target === this) closeProductModal(); });
 document.getElementById('orderModal').addEventListener('click', function(e) { if (e.target === this) closeOrderModal(); });
+
+
+/* ── RX PRICE ── */
+function buildWaBtn(o, rx, idx) {
+  const phone = (o.customer?.phone || '').replace(/\D/g, '');
+  const name  = o.customer?.name || 'Customer';
+  const msg   = encodeURIComponent(
+    `Hello ${name} 👋\n\nYour prescription order *${o.orderNumber}* is ready to confirm!\n\n` +
+    `💊 Medicines for *${rx.daysRequired} days*\n` +
+    `💰 Price: *₹${rx.agreedPrice}*\n\n` +
+    `Please reply to confirm and we'll pack your order right away.\n\n` +
+    `— Khandelwal Medicals 🏥`
+  );
+  return `<a class="btn-whatsapp" href="https://wa.me/91${phone}?text=${msg}" target="_blank">📲 Send Price on WhatsApp</a>`;
+}
+
+async function saveRxPrice(orderId, rxIdx, phone, orderNumber) {
+  const input = document.getElementById(`rxPrice_${orderId}_${rxIdx}`);
+  const price = parseFloat(input.value);
+  if (!price || price <= 0) { showToast('⚠️ Enter a valid price', 'error'); return; }
+  try {
+    const order   = allOrders.find(o => o.id === orderId);
+    const rxItems = [...(order.rxItems || [])];
+    rxItems[rxIdx] = { ...rxItems[rxIdx], agreedPrice: price };
+    await apiFetch('/admin/orders/' + orderId, {
+      method: 'PATCH',
+      body: JSON.stringify({ rxItems }),
+    });
+    order.rxItems = rxItems;
+    document.getElementById(`rxWaBtn_${orderId}_${rxIdx}`).innerHTML = buildWaBtn(order, rxItems[rxIdx], rxIdx);
+    showToast('✅ Price saved — send WhatsApp to notify customer', 'success');
+  } catch(e) {
+    showToast('❌ Failed to save: ' + e.message, 'error');
+  }
+}
+
 
 /* ── REAL-TIME POLLING + NOTIFICATIONS ── */
 let lastOrderCount = 0;

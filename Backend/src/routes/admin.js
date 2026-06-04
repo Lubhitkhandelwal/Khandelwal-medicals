@@ -44,6 +44,20 @@ router.get("/orders", async (req, res, next) => {
 
 // PATCH /admin/orders/:id/status
 // Body: { status: "confirmed" | "ready" | "dispatched" | "delivered" | "picked_up" | "cancelled" }
+
+// PATCH /admin/orders/:id  — update any order fields (rxItems, etc.)
+router.patch("/orders/:id", async (req, res, next) => {
+  try {
+    const order = await prisma.order.update({
+      where: { id: req.params.id },
+      data:  req.body,
+    });
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.patch("/orders/:id/status", async (req, res, next) => {
   try {
     const { status } = req.body;
