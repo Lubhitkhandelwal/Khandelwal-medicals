@@ -76,9 +76,7 @@ router.post("/", async (req, res, next) => {
 
     // 3. Calculate totals
     const storeConfig = await prisma.storeConfig.findUnique({ where: { id: "store" } });
-    const subtotal = items.reduce((sum, item) => {
-      return sum + productMap[item.productId].price * item.quantity;
-    }, 0);
+
 
     const deliveryCharge =
       fulfillment === "delivery" && subtotal < storeConfig.minOrderFree
