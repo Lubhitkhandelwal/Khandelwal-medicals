@@ -504,6 +504,12 @@ function finishOrder() {
   );
 }
 
+function syncSearch(val) {
+  document.getElementById('searchInput').value = val;
+  document.getElementById('clearSearch').classList.toggle('hidden', !val);
+  renderProducts();
+}
+
 /* ════════════════════════════════════════════════════════════════
    INIT
    ════════════════════════════════════════════════════════════════ */

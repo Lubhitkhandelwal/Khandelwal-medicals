@@ -16,12 +16,11 @@
 <!-- ── NAVBAR ─────────────────────────────────────────────────── -->
 <nav class="nav">
   <a class="nav-logo" href="#">
-    <!-- <div class="nav-logo-icon">💊</div> -->
-     <div class="nav-logo-icon">
+    <div class="nav-logo-icon">
       <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="32" height="32" rx="8" fill="#1D9E75"/>
-      <rect x="13" y="6" width="6" height="20" rx="3" fill="white"/>
-      <rect x="6" y="13" width="20" height="6" rx="3" fill="white"/>
+        <rect width="32" height="32" rx="8" fill="#1D9E75"/>
+        <rect x="13" y="6" width="6" height="20" rx="3" fill="white"/>
+        <rect x="6" y="13" width="20" height="6" rx="3" fill="white"/>
       </svg>
     </div>
     <div class="nav-logo-text">
@@ -29,32 +28,20 @@
       <span>Licensed Pharmacy</span>
     </div>
   </a>
-  <!-- <a class="nav-logo" href="#">
-    <img src="logo.svg" alt="Khandelwal Medicals" style="height:44px;" />
-  </a> -->
 
-  <div class="nav-search">
-    <span class="nav-search-icon">🔍</span>
-    <input type="text" id="searchInput" placeholder="Search medicines, brands, vitamins…" oninput="renderProducts()" />
-    <button class="nav-search-clear hidden" id="clearSearch" onclick="clearSearch()">✕</button>
-  </div>
+  <!-- hidden inputs so app.js search functions don't break -->
+  <input type="text" id="searchInput" style="display:none" />
+  <button id="clearSearch" style="display:none"></button>
 
-  <!-- <div class="nav-right">
+  <div class="nav-right">
     <a class="nav-phone" href="tel:+916378966072">+91 63789 66072</a>
+    <a class="track-btn-nav" href="/track.html">📦 <span class="track-label">Track Order</span></a>
     <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
-      🛒 <span class="hidden" id="cartBtnLabel">Cart</span>
+      🛒 <span class="cart-btn-label">Cart</span>
       <span class="cart-badge hidden" id="cartBadge">0</span>
     </button>
-  </div> -->
-  <div class="nav-right">
-  <a class="nav-phone" href="tel:+916378966072">+91 63789 66072</a>
-  <a class="track-btn-nav" href="/track.html">📦 Track Order</a>
-  <button class="cart-btn" onclick="openCart()" aria-label="Open cart">
-    🛒 <span class="hidden" id="cartBtnLabel">Cart</span>
-    <span class="cart-badge hidden" id="cartBadge">0</span>
-  </button>
   </div>
-  </nav>
+</nav>
 
 <!-- ── MAIN PAGE ──────────────────────────────────────────────── -->
 <main class="page">
@@ -79,10 +66,22 @@
         🚚 Home Delivery
       </button>
       <button class="toggle-btn" id="btnPickup" onclick="setFulfillment('pickup')">
-        🏪 Store Pickup
+        🏪 Store Pickup <span class="pickup-sub">· Ready in ~30 min</span>
       </button>
     </div>
     <p class="fulfillment-note" id="fulfillmentNote">₹20 charge · Free above ₹250</p>
+  </div>
+
+  <!-- Search bar -->
+  <div class="main-search-wrap">
+    <span class="main-search-icon">🔍</span>
+    <input
+      type="text"
+      id="searchInputMain"
+      placeholder="Search medicines, brands, vitamins…"
+      oninput="syncSearch(this.value)"
+      class="main-search-input"
+    />
   </div>
 
   <!-- Categories -->
@@ -115,7 +114,7 @@
   <div class="cart-footer hidden" id="cartFooter">
     <div class="cart-row"><span>Subtotal (MRP)</span><span id="totalMrp">₹0</span></div>
     <div class="cart-savings"><span>💚 Your savings</span><span id="totalSavings">−₹0</span></div>
-    <div class="cart-row" id="deliveryRow"><span>Delivery charge</span><span id="deliveryAmt">₹40</span></div>
+    <div class="cart-row" id="deliveryRow"><span>Delivery charge</span><span id="deliveryAmt">₹20</span></div>
     <div class="cart-total"><span>Total payable</span><span id="grandTotal">₹0</span></div>
     <button class="checkout-btn" onclick="openCheckout()">Proceed to checkout →</button>
   </div>
@@ -164,7 +163,7 @@
       <div id="addressSection">
         <div class="form-group" style="margin-bottom:10px">
           <label for="custAddress">Delivery address *</label>
-          <textarea id="custAddress" placeholder="House/Flat no., Street, Area, Jaipur…"></textarea>
+          <textarea id="custAddress" placeholder="House/Flat no., Street, Area, Kumher…"></textarea>
           <span class="form-error hidden" id="errAddress">Address is required</span>
         </div>
         <div class="form-group">
@@ -184,19 +183,7 @@
       <div>
         <p style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em">Payment Method</p>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <!-- <label class="pay-option selected" id="payUPI" onclick="selectPayment('upi', this)">
-            <input type="radio" name="payment" value="upi" checked />
-            <span class="pay-option-label">📱 UPI / GPay / PhonePe</span>
-          </label>
-          <label class="pay-option" id="payCOD" onclick="selectPayment('cod', this)">
-            <input type="radio" name="payment" value="cod" />
-            <span class="pay-option-label" id="codLabel">💵 Cash on delivery</span>
-          </label>
-          <label class="pay-option" id="payCard" onclick="selectPayment('card', this)">
-            <input type="radio" name="payment" value="card" />
-            <span class="pay-option-label">💳 Credit / Debit card</span>
-          </label> -->
-          <label class="pay-option" id="payCOD" onclick="selectPayment('cod', this)" style="order:-1">
+          <label class="pay-option selected" id="payCOD" onclick="selectPayment('cod', this)">
             <input type="radio" name="payment" value="cod" checked />
             <span class="pay-option-label" id="codLabel">💵 Cash on delivery</span>
           </label>
@@ -218,7 +205,7 @@
       </button>
     </div>
 
-    <!-- Success screen (hidden until order placed) -->
+    <!-- Success screen -->
     <div id="successScreen" class="success-screen hidden">
       <div class="success-icon">✅</div>
       <h2 id="successHeading">Order Placed!</h2>
