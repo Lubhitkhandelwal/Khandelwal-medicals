@@ -94,6 +94,14 @@ input, textarea { outline: none; }
 .nav-phone { font-size: 13px; color: var(--gray-500); text-decoration: none; display: none; }
 @media(min-width:640px){ .nav-phone { display: block; } }
 
+.track-btn-nav {
+  font-size: 13px; font-weight: 500; color: #1D9E75;
+  text-decoration: none; padding: 7px 12px;
+  border: 1.5px solid #1D9E75; border-radius: 8px;
+  transition: all 0.15s; white-space: nowrap;
+}
+.track-btn-nav:hover { background: #1D9E75; color: white; }
+
 /* ── Buttons ──────────────────────────────────────────────────── */
 .btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;

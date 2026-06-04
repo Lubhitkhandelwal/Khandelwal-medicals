@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Track Order — Khandelwal Medicals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Sora', sans-serif; background: #f4f6f9; color: #1a1a1a; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+/* ── NAV ── */
+nav {
+  background: white; border-bottom: 1px solid #e5e7eb;
+  padding: 0.875rem 1.5rem; display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { font-size: 15px; font-weight: 600; color: #085041; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.nav-back { font-size: 13px; color: #6b7280; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+.nav-back:hover { color: #1D9E75; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #085041 0%, #1D9E75 100%);
+  padding: 2.5rem 1.5rem; text-align: center; color: white;
+}
+.hero h1 { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+.hero p { font-size: 14px; opacity: 0.85; }
+
+/* ── SEARCH BOX ── */
+.search-section { max-width: 480px; margin: -28px auto 0; padding: 0 1rem; position: relative; z-index: 10; }
+.search-card {
+  background: white; border-radius: 16px; padding: 1.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+.search-card label { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 8px; }
+.input-row { display: flex; gap: 8px; }
+.search-card input {
+  flex: 1; padding: 11px 14px; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; font-size: 15px; font-family: inherit;
+  outline: none; transition: border-color 0.15s;
+}
+.search-card input:focus { border-color: #1D9E75; }
+.track-btn {
+  padding: 11px 20px; background: #1D9E75; color: white;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: background 0.15s; white-space: nowrap;
+}
+.track-btn:hover { background: #0F6E56; }
+.track-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+/* ── RESULTS ── */
+.results { max-width: 480px; margin: 1.5rem auto 2rem; padding: 0 1rem; }
+
+.empty-state { text-align: center; padding: 2rem; color: #9ca3af; }
+.empty-icon { font-size: 40px; margin-bottom: 0.75rem; opacity: 0.5; }
+
+.order-card {
+  background: white; border-radius: 14px; border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px; overflow: hidden;
+}
+.order-card-head {
+  padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #f3f4f6;
+}
+.order-id { font-size: 13px; font-weight: 600; font-family: monospace; color: #111827; }
+.order-date { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.order-card-body { padding: 1rem 1.25rem; }
+.order-items { margin-bottom: 0.75rem; }
+.order-item-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: #374151; }
+.order-divider { border: none; border-top: 1px solid #f3f4f6; margin: 10px 0; }
+.order-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.meta-item p:first-child { font-size: 11px; color: #9ca3af; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 2px; }
+.meta-item p:last-child { font-size: 13px; font-weight: 500; color: #111827; }
+.order-total { display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; padding-top: 10px; border-top: 1px solid #f3f4f6; margin-top: 10px; }
+
+/* ── STATUS BADGE ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+.badge-yellow { background: #fef9c3; color: #ca8a04; }
+.badge-blue   { background: #dbeafe; color: #2563eb; }
+.badge-purple { background: #f3e8ff; color: #9333ea; }
+.badge-green  { background: #dcfce7; color: #16a34a; }
+.badge-red    { background: #fee2e2; color: #dc2626; }
+.badge-gray   { background: #f3f4f6; color: #6b7280; }
+
+/* ── PROGRESS ── */
+.progress-bar {
+  display: flex; align-items: center; margin: 1rem 0 0.5rem;
+  position: relative;
+}
+.progress-step {
+  display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; z-index: 1;
+}
+.step-dot {
+  width: 24px; height: 24px; border-radius: 50%; border: 2px solid #e5e7eb;
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all 0.2s;
+}
+.step-dot.done { background: #1D9E75; border-color: #1D9E75; color: white; }
+.step-dot.active { background: white; border-color: #1D9E75; color: #1D9E75; font-weight: 700; }
+.step-label { font-size: 10px; color: #9ca3af; margin-top: 4px; text-align: center; white-space: nowrap; }
+.step-label.done, .step-label.active { color: #1D9E75; font-weight: 500; }
+.progress-line {
+  position: absolute; top: 12px; left: 0; right: 0; height: 2px;
+  background: #e5e7eb; z-index: 0;
+}
+.progress-line-fill {
+  height: 100%; background: #1D9E75; transition: width 0.3s;
+}
+
+/* ── LOADER ── */
+.loader { text-align: center; padding: 2rem; color: #9ca3af; font-size: 14px; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg { color: #ef4444; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">💊 Khandelwal Medicals</a>
+  <a href="/" class="nav-back">← Back to store</a>
+</nav>
+
+<div class="hero">
+  <h1>📦 Track Your Order</h1>
+  <p>Enter your mobile number to see all your orders</p>
+</div>
+
+<div class="search-section">
+  <div class="search-card">
+    <label>Mobile Number</label>
+    <div class="input-row">
+      <input type="tel" id="phoneInput" placeholder="e.g. 9876543210" maxlength="10"
+        onkeydown="if(event.key==='Enter') trackOrders()" />
+      <button class="track-btn" id="trackBtn" onclick="trackOrders()">Track →</button>
+    </div>
+    <p class="error-msg hidden" id="errorMsg"></p>
+  </div>
+</div>
+
+<div class="results" id="results"></div>
+
+<script>
+const API = 'https://khandelwal-medicals-production.up.railway.app';
+
+const STEPS = ['placed', 'confirmed', 'ready', 'delivered'];
+const STEP_LABELS = ['Placed', 'Confirmed', 'Ready', 'Delivered'];
+const STEP_ICONS = ['📋', '✅', '🛍️', '🎉'];
+
+function statusBadge(s) {
+  const map = {
+    placed:     ['badge-yellow', '⏳ Pending'],
+    confirmed:  ['badge-blue',   '✅ Confirmed'],
+    ready:      ['badge-purple', '🛍️ Ready'],
+    dispatched: ['badge-purple', '🚚 Dispatched'],
+    delivered:  ['badge-green',  '🎉 Delivered'],
+    picked_up:  ['badge-green',  '✅ Picked Up'],
+    cancelled:  ['badge-red',    '❌ Cancelled'],
+  };
+  const [cls, label] = map[s] || ['badge-gray', s];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function progressBar(status) {
+  if (status === 'cancelled') return `<div style="text-align:center;padding:0.75rem 0;font-size:13px;color:#ef4444">❌ This order was cancelled</div>`;
+  const current = STEPS.indexOf(status === 'dispatched' ? 'ready' : status === 'picked_up' ? 'delivered' : status);
+  const pct = current <= 0 ? 0 : (current / (STEPS.length - 1)) * 100;
+  return `
+    <div class="progress-bar">
+      <div class="progress-line"><div class="progress-line-fill" style="width:${pct}%"></div></div>
+      ${STEPS.map((s, i) => {
+        const state = i < current ? 'done' : i === current ? 'active' : '';
+        return `<div class="progress-step">
+          <div class="step-dot ${state}">${i < current ? '✓' : STEP_ICONS[i]}</div>
+          <div class="step-label ${state}">${STEP_LABELS[i]}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function trackOrders() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  const errEl = document.getElementById('errorMsg');
+  errEl.classList.add('hidden');
+
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    errEl.textContent = '⚠️ Enter a valid 10-digit mobile number';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const btn = document.getElementById('trackBtn');
+  btn.disabled = true;
+  btn.textContent = 'Tracking…';
+  document.getElementById('results').innerHTML = '<div class="loader"><span class="spinner"></span> Looking up your orders…</div>';
+
+  try {
+    const res = await fetch(`${API}/api/orders/track/${phone}`);
+    const data = await res.json();
+    const orders = data.orders || [];
+
+    if (!orders.length) {
+      document.getElementById('results').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p style="font-size:15px;font-weight:500;color:#374151">No orders found</p>
+          <p style="font-size:13px;margin-top:4px">No orders placed with this number yet</p>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('results').innerHTML = `
+      <p style="font-size:13px;color:#6b7280;margin-bottom:12px">${orders.length} order${orders.length > 1 ? 's' : ''} found</p>
+      ${orders.map(o => `
+        <div class="order-card">
+          <div class="order-card-head">
+            <div>
+              <div class="order-id">#${o.orderNumber}</div>
+              <div class="order-date">${formatDate(o.createdAt)}</div>
+            </div>
+            ${statusBadge(o.status)}
+          </div>
+          <div class="order-card-body">
+            ${progressBar(o.status)}
+            <div class="order-items">
+              ${(o.items || []).map(i => `
+                <div class="order-item-row">
+                  <span>${i.productName} × ${i.quantity}</span>
+                  <span>₹${i.price * i.quantity}</span>
+                </div>`).join('')}
+            </div>
+            <div class="order-meta">
+              <div class="meta-item">
+                <p>Fulfillment</p>
+                <p>${o.fulfillment === 'delivery' ? '🚚 Home Delivery' : '🏪 Store Pickup'}</p>
+              </div>
+              <div class="meta-item">
+                <p>Payment</p>
+                <p>${(o.paymentMethod || '').toUpperCase()}</p>
+              </div>
+              ${o.deliveryAddress ? `<div class="meta-item" style="grid-column:1/-1">
+                <p>Address</p>
+                <p>${o.deliveryAddress}</p>
+              </div>` : ''}
+            </div>
+            <div class="order-total">
+              <span>Total</span>
+              <span>₹${o.total}</span>
+            </div>
+          </div>
+        </div>`).join('')}`;
+  } catch (e) {
+    document.getElementById('results').innerHTML = `<div class="empty-state"><p style="color:#ef4444">Failed to load orders. Please try again.</p></div>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Track →';
+  }
+}
+</script>
+</body>
+</html>
