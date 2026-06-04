@@ -397,9 +397,31 @@ function openCheckout() {
 
   // Populate summary
   const items = Object.keys(cart).map(id => {
-    const p = PRODUCTS.find(x => x.id === id);
-    return `<div class="summary-item"><span>${p.name} × ${cart[id]}</span><span>₹${p.price * cart[id]}</span></div>`;
-  }).join('');
+
+  // Prescription item
+  if (cart[id]?.isRx) {
+    return `
+      <div class="summary-item">
+        <span>📋 Prescription Medicines</span>
+        <span>Price TBD</span>
+      </div>
+    `;
+  }
+
+  const p = PRODUCTS.find(x => String(x.id) === String(id));
+
+  if (!p) {
+    console.error("Missing product:", id);
+    return '';
+  }
+
+  return `
+    <div class="summary-item">
+      <span>${p.name} × ${cart[id]}</span>
+      <span>₹${p.price * cart[id]}</span>
+    </div>
+  `;
+}).join('');
   document.getElementById('modalSummaryItems').innerHTML = items;
   document.getElementById('modalTotal').textContent = `₹${grandTotal()}`;
 
