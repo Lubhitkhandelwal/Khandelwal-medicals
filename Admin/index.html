@@ -221,6 +221,11 @@ tr:hover td { background: #fafafa; }
 .toggle-switch::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
 .toggle-switch.on::after { left: 19px; }
 
+@keyframes slideIn {
+  from { transform: translateX(100px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
 /* ── Product image thumbnail in table ── */
 .prod-thumb { width: 36px; height: 36px; object-fit: contain; border-radius: 6px; border: 1px solid #e5e7eb; background: #f9fafb; vertical-align: middle; margin-right: 8px; }
 </style>
@@ -928,6 +933,67 @@ function showToast(msg, type) {
 
 document.getElementById('productModal').addEventListener('click', function(e) { if (e.target === this) closeProductModal(); });
 document.getElementById('orderModal').addEventListener('click', function(e) { if (e.target === this) closeOrderModal(); });
+
+/* ── REAL-TIME POLLING + NOTIFICATIONS ── */
+let lastOrderCount = 0;
+const notificationSound = new Audio('https://cdn.freesound.org/previews/411/411089_5121236-lq.mp3');
+
+async function checkNewOrders() {
+  try {
+    const data = await apiFetch('/admin/orders');
+    const orders = data.orders || data;
+
+    if (lastOrderCount === 0) {
+      lastOrderCount = orders.length; // baseline on first run
+      return;
+    }
+
+    if (orders.length > lastOrderCount) {
+      const newCount = orders.length - lastOrderCount;
+      lastOrderCount = orders.length;
+
+      // Refresh orders table and dashboard silently
+      allOrders = orders;
+      renderOrders();
+      loadDashboard();
+
+      // Sound
+      notificationSound.play().catch(() => {});
+
+      // Green banner toast
+      const toast = document.createElement('div');
+      toast.textContent = '🛒 ' + newCount + ' new order' + (newCount > 1 ? 's' : '') + ' received!';
+      toast.style.cssText = `
+        position:fixed; top:20px; right:20px; z-index:9999;
+        background:#16a34a; color:white; padding:16px 24px;
+        border-radius:12px; font-size:16px; font-weight:600;
+        box-shadow:0 4px 20px rgba(0,0,0,0.25);
+        animation:slideIn 0.3s ease;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
+
+      // Browser desktop notification
+      if (Notification.permission === 'granted') {
+        new Notification('New Order — Khandelwal Medicals', {
+          body: newCount + ' new order' + (newCount > 1 ? 's' : '') + ' just came in!',
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="%231D9E75"/><rect x="13" y="6" width="6" height="20" rx="3" fill="white"/><rect x="6" y="13" width="20" height="6" rx="3" fill="white"/></svg>'
+        });
+      }
+    }
+  } catch (e) {
+    // silent fail — don't spam console
+  }
+}
+
+// Ask for browser notification permission once
+if (Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
+// Start polling every 10 seconds
+setInterval(checkNewOrders, 10000);
+
 </script>
 </body>
 </html>
