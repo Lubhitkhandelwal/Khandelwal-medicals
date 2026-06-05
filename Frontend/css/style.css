@@ -667,3 +667,16 @@ footer strong { color: var(--gray-600, #4b5563); font-weight: 600; }
   .rx-days-grid { gap: 6px; }
   .rx-day-btn { padding: 6px 12px; font-size: 12px; }
 }
+
+.img-zoom-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 1000; display: flex; align-items: center; justify-content: center;
+  cursor: zoom-out; animation: fadeIn 0.2s ease;
+}
+.img-zoom-overlay img {
+  max-width: 90vw; max-height: 90vh; object-fit: contain;
+  border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  animation: zoomIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes zoomIn { from { transform: scale(0.85) } to { transform: scale(1) } }

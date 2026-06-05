@@ -31,6 +31,7 @@ async function loadProducts() {
       mrp:         p.mrp,
       price:       p.price,
       inStock:     p.stock > 0,
+      imageUrl:    p.imageUrl || null,
       tags:        [],
     }));
     CATEGORIES = ['All', ...new Set(PRODUCTS.map(p => p.category))];
@@ -279,7 +280,7 @@ function renderProducts() {
     return `
       <div class="product-card">
         ${p.imageUrl
-          ? `<img src="${p.imageUrl}" class="prod-img" onerror="this.style.display='none'" />`
+          ? `<img src="${p.imageUrl}" class="prod-img" style="cursor:zoom-in" onclick="openImgZoom('${p.imageUrl}')" onerror="this.style.display='none'" />`
           : `<div class="prod-icon">💊</div>`}
         <p class="prod-name">${p.name}</p>
         <p class="prod-brand">${p.brand}</p>
@@ -293,6 +294,17 @@ function renderProducts() {
         ${cta}
       </div>`;
   }).join('');
+}
+
+function openImgZoom(src) {
+  const overlay = document.createElement('div');
+  overlay.className = 'img-zoom-overlay';
+  overlay.innerHTML = `<img src="${src}" alt="Product image" />`;
+  overlay.onclick = () => overlay.remove();
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); }
+  });
+  document.body.appendChild(overlay);
 }
 
 /* ════════════════════════════════════════════════════════════════
