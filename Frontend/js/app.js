@@ -79,13 +79,108 @@ async function loadProducts() {
 //   }
 // }  
 
+// const CAT_ICONS = {
+//   'All':'🏪','Pain Relief':'💊','Vitamins':'🌿','Cold & Cough':'🌬️',
+//   'Digestion':'⚡','Skin Care':'✨','First Aid':'🩹','Devices':'🩺',
+//   'Eye Care':'👁️','Hygiene':'🧴','Cosmetics':'💄',
+// 'Facewash':'🧼',
+// 'Moisturizer':'🧴',
+// 'Serum':'💧',
+// };
+
 const CAT_ICONS = {
-  'All':'🏪','Pain Relief':'💊','Vitamins':'🌿','Cold & Cough':'🌬️',
-  'Digestion':'⚡','Skin Care':'✨','First Aid':'🩹','Devices':'🩺',
-  'Eye Care':'👁️','Hygiene':'🧴','Cosmetics':'💄',
-'Facewash':'🧼',
-'Moisturizer':'🧴',
-'Serum':'💧',
+  // ── General ──────────────────────────────
+  'All':'🏪',
+
+  // ── Medicines ────────────────────────────
+  'Pain Relief':'💊',
+  'Vitamins':'🌿',
+  'Cold & Cough':'🌬️',
+  'Digestion':'⚡',
+  'First Aid':'🩹',
+  'Eye Care':'👁️',
+  'Antibiotics':'🔬',
+  'Antacids & Acidity':'🔥',
+  'Allergy & Antihistamine':'🤧',
+  'Fever & Flu':'🤒',
+  'Diabetes Care':'🩸',
+  'Heart & BP':'❤️',
+  'Thyroid Care':'🦋',
+  'Nerve & Sleep':'🧠',
+  'Ear Care':'👂',
+  'Dental & Oral Care':'🦷',
+  'Respiratory & Asthma':'🫁',
+  'Urinary Care':'🚿',
+  'Women\'s Health':'🌸',
+  'Men\'s Health':'💙',
+  'Children\'s Health':'👶',
+  'Protein & Nutrition':'🥛',
+  'Electrolytes & Rehydration':'💧',
+  'Multivitamins':'💊',
+  'Immunity Boosters':'🛡️',
+  'Weight Management':'⚖️',
+  'Sleep & Stress':'😴',
+  'Liver Care':'🫀',
+  'Kidney Care':'🫘',
+  'Ortho & Bone':'🦴',
+  'Surgical Supplies':'🏥',
+  'Sexual Wellness':'💊',
+
+  // ── Ayurvedic ────────────────────────────
+  'Ayurvedic':'🌱',
+  'Ayurvedic Juices':'🥤',
+  'Ayurvedic Churna & Powder':'🌾',
+  'Ayurvedic Tablets & Capsules':'🌿',
+  'Ayurvedic Oils & Balms':'🫙',
+  'Ayurvedic Kadha & Syrup':'🍵',
+  'Chyawanprash & Tonics':'🍯',
+  'Homeopathic':'🔮',
+
+  // ── Devices & Equipment ──────────────────
+  'Devices':'🩺',
+
+  // ── Skin Care ────────────────────────────
+  'Skin Care':'✨',
+  'Facewash':'🧼',
+  'Moisturizer':'🧴',
+  'Serum':'💧',
+  'Sunscreen':'☀️',
+  'Sunblock Sprays':'🌤️',
+  'Lip Care':'💋',
+  'Eye Cream':'👁️',
+  'Face Mask & Scrub':'🧖',
+  'Baby Skin Care':'🍼',
+  'Hand Cream':'🤲',
+  'Foot Care':'🦶',
+
+  // ── Hair Care ────────────────────────────
+  'Shampoo & Hair Care':'💆',
+  'Anti-Dandruff':'🧴',
+  'Hair Oil':'🫙',
+  'Hair Colour':'🎨',
+  'Conditioner & Hair Mask':'🌿',
+
+  // ── Body Care ────────────────────────────
+  'Hygiene':'🧴',
+  'Soaps':'🫧',
+  'Body Lotion':'🧴',
+  'Talcum Powder':'🌸',
+  'Deodorant & Perfume':'🌸',
+  'Beard & Shaving':'🪒',
+  'Sanitary & Feminine Care':'🌙',
+  'Intimate Wash':'🌺',
+  'Cotton & Tissues':'🧻',
+
+  // ── Cosmetics ────────────────────────────
+  'Cosmetics':'💄',
+  'Nail Care':'💅',
+  'Kajal & Eyeliner':'👀',
+
+  // ── Baby & Mother Care ───────────────────
+  'Baby Food & Formula':'🍼',
+  'Baby Accessories':'🧸',
+  'Maternity Care':'🤱',
+  'Diapers & Wipes':'🧷',
 };
 
 /* ════════════════════════════════════════════════════════════════
