@@ -111,6 +111,32 @@ router.post("/products", async (req, res, next) => {
   }
 });
 
+// POST /admin/products/:id/duplicate
+router.post("/products/:id/duplicate", async (req, res, next) => {
+  try {
+    const original = await prisma.product.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!original) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    const { id, createdAt, updatedAt, ...productData } = original;
+
+    const duplicate = await prisma.product.create({
+      data: {
+        ...productData,
+        name: productData.name + " (Copy)",
+      },
+    });
+
+    res.status(201).json({ product: duplicate });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // PATCH /admin/products/:id   — update price, stock, active status
 // router.patch("/products/:id", async (req, res, next) => {
 //   try {
