@@ -16,13 +16,13 @@ router.use(adminAuth);
 // GET /admin/orders?status=placed&date=2024-06-02
 router.get("/orders", async (req, res, next) => {
   try {
-    const { status, date } = req.query;
+    const { status, date, take = 100 } = req.query;
     const where = {};
 
     if (status) where.status = status;
     if (date) {
       const start = new Date(date);
-      const end   = new Date(date);
+      const end = new Date(date);
       end.setDate(end.getDate() + 1);
       where.createdAt = { gte: start, lt: end };
     }
@@ -30,9 +30,10 @@ router.get("/orders", async (req, res, next) => {
     const orders = await prisma.order.findMany({
       where,
       orderBy: { createdAt: "desc" },
+      take: Number(take),
       include: {
         customer: { select: { name: true, phone: true } },
-        items:    { select: { productName: true, quantity: true, price: true } },
+        items: { select: { productName: true, quantity: true, price: true } },
       },
     });
 

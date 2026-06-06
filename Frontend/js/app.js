@@ -10,6 +10,14 @@ const STORE = {
   freeDeliveryAbove: 250,
 };
 
+function optimizeImage(url, width = 300) {
+  if (!url) return null;
+  if (url.includes('cloudinary.com')) {
+    return url.replace('/upload/', `/upload/q_auto,f_auto,w_${width},c_limit/`);
+  }
+  return url;
+}
+
 // ── Products ──────────────────────────────────────────────────
 // Loaded from backend API on page init
 let PRODUCTS = [];
@@ -124,8 +132,32 @@ function clearCart() {
 // Central refresh — keeps everything in sync
 function refresh() {
   updateBadge();
-  renderProducts();
   renderCartItems();
+  updateProductButtons(); // only update buttons, not full grid
+}
+
+function updateProductButtons() {
+  PRODUCTS.forEach(p => {
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+      const nameEl = card.querySelector('.prod-name');
+      if (!nameEl || nameEl.textContent !== p.name) return;
+      const disc = Math.round((p.mrp - p.price) / p.mrp * 100);
+      const qty = cart[p.id] || 0;
+      const ctaEl = card.querySelector('.btn-outline, .qty-control, .oos-badge');
+      if (!ctaEl) return;
+      const newCta = !p.inStock
+        ? `<span class="oos-badge">Out of stock</span>`
+        : qty === 0
+          ? `<button class="btn-outline" onclick="addToCart('${p.id}')">🛒 Add to cart</button>`
+          : `<div class="qty-control">
+               <button class="qty-btn" onclick="changeQty('${p.id}',-1)">−</button>
+               <span class="qty-num">${qty}</span>
+               <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
+             </div>`;
+      ctaEl.outerHTML = newCta;
+    });
+  });
 }
 
 function updateBadge() {
@@ -226,9 +258,11 @@ function clearSearch() {
   renderProducts();
 }
 
+let searchTimer;
 document.getElementById('searchInput').addEventListener('input', function() {
   document.getElementById('clearSearch').classList.toggle('hidden', !this.value);
-  renderProducts();
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => renderProducts(), 250);
 });
 
 /* ════════════════════════════════════════════════════════════════
@@ -280,7 +314,7 @@ function renderProducts() {
     return `
       <div class="product-card">
         ${p.imageUrl
-          ? `<img src="${p.imageUrl}" class="prod-img" style="cursor:zoom-in" onclick="openImgZoom('${p.imageUrl}')" onerror="this.style.display='none'" />`
+          ? `<img src="${optimizeImage(p.imageUrl)}" class="prod-img" loading="lazy" style="cursor:zoom-in" onclick="openImgZoom('${p.imageUrl}')" onerror="this.style.display='none'" />`
           : `<div class="prod-icon">💊</div>`}
         <p class="prod-name">${p.name}</p>
         <p class="prod-brand">${p.brand}</p>
@@ -373,7 +407,11 @@ function renderCartItems() {
     if (!p) return '';
     return `
       <div class="cart-item">
-        <div class="ci-icon">💊</div>
+        <div class="ci-icon" style="padding:0;overflow:hidden;background:#f9fafb">
+          ${p.imageUrl
+            ? `<img src="${p.imageUrl}" style="width:100%;height:100%;object-fit:contain;padding:4px" loading="lazy" onerror="this.parentElement.innerHTML='💊'" />`
+            : '💊'}
+        </div>
         <div class="ci-info">
           <p class="ci-name">${p.name}</p>
           <p class="ci-sub">${p.brand} · ${p.pack}</p>
@@ -610,10 +648,12 @@ function finishOrder() {
   );
 }
 
+let syncTimer;
 function syncSearch(val) {
   document.getElementById('searchInput').value = val;
   document.getElementById('clearSearch').classList.toggle('hidden', !val);
-  renderProducts();
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => renderProducts(), 250);
 }
 
 /* ════════════════════════════════════════════════════════════════
