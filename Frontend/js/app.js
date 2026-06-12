@@ -24,31 +24,76 @@ let PRODUCTS = [];
 let CATEGORIES = ['All'];
 
 async function loadProducts() {
-  try {
-    // const res = await fetch('http://localhost:4000/api/products');
-    const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/products');
-    const data = await res.json();
-    // Map backend fields to frontend shape
-    PRODUCTS = data.products.map(p => ({
-      id:          p.id,
-      name:        p.name,
-      brand:       p.brand,
-      composition: p.description || '',
-      pack:        p.unit || '',
-      category:    p.category,
-      mrp:         p.mrp,
-      price:       p.price,
-      inStock:     p.stock > 0,
-      imageUrl:    p.imageUrl || null,
-      tags:        [],
-    }));
-    CATEGORIES = ['All', ...new Set(PRODUCTS.map(p => p.category))];
-  } catch (err) {
-    console.error('Failed to load products:', err);
-    document.getElementById('productGrid').innerHTML =
-      `<div class="no-results"><div class="no-results-icon">⚠️</div><p style="font-size:16px;font-weight:500;color:var(--gray-600)">Could not load products</p><p style="font-size:14px;margin-top:4px">Make sure the backend is running on port 4000</p></div>`;
+  const grid = document.getElementById('productGrid');
+  
+  // Show loading state
+  grid.innerHTML = `<div class="no-results"><div class="no-results-icon">⏳</div><p style="font-size:16px;font-weight:500;color:var(--gray-600)">Loading products…</p></div>`;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
+      const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/products', {
+        signal: controller.signal
+      });
+      clearTimeout(timeout);
+
+      const data = await res.json();
+      PRODUCTS = data.products.map(p => ({
+        id:          p.id,
+        name:        p.name,
+        brand:       p.brand,
+        composition: p.description || '',
+        pack:        p.unit || '',
+        category:    p.category,
+        mrp:         p.mrp,
+        price:       p.price,
+        inStock:     p.stock > 0,
+        imageUrl:    p.imageUrl || null,
+        tags:        [],
+      }));
+      CATEGORIES = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+      return; // success, exit
+
+    } catch (err) {
+      console.error(`Attempt ${attempt} failed:`, err);
+      if (attempt < 3) {
+        grid.innerHTML = `<div class="no-results"><div class="no-results-icon">⏳</div><p style="font-size:16px;font-weight:500;color:var(--gray-600)">Connecting… (attempt ${attempt + 1}/3)</p></div>`;
+        await new Promise(r => setTimeout(r, 3000)); // wait 3s before retry
+      } else {
+        grid.innerHTML = `<div class="no-results"><div class="no-results-icon">⚠️</div><p style="font-size:16px;font-weight:500;color:var(--gray-600)">Could not load products</p><p style="font-size:14px;margin-top:4px">Please check your connection and <a href="" style="color:var(--brand-600)">refresh</a></p></div>`;
+      }
+    }
   }
 }
+
+// async function loadProducts() {
+//   try {
+//     // const res = await fetch('http://localhost:4000/api/products');
+//     const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/products');
+//     const data = await res.json();
+//     // Map backend fields to frontend shape
+//     PRODUCTS = data.products.map(p => ({
+//       id:          p.id,
+//       name:        p.name,
+//       brand:       p.brand,
+//       composition: p.description || '',
+//       pack:        p.unit || '',
+//       category:    p.category,
+//       mrp:         p.mrp,
+//       price:       p.price,
+//       inStock:     p.stock > 0,
+//       imageUrl:    p.imageUrl || null,
+//       tags:        [],
+//     }));
+//     CATEGORIES = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+//   } catch (err) {
+//     console.error('Failed to load products:', err);
+//     document.getElementById('productGrid').innerHTML =
+//       `<div class="no-results"><div class="no-results-icon">⚠️</div><p style="font-size:16px;font-weight:500;color:var(--gray-600)">Could not load products</p><p style="font-size:14px;margin-top:4px">Make sure the backend is running on port 4000</p></div>`;
+//   }
+// }
 
 // async function loadProducts() {
 //   try {
