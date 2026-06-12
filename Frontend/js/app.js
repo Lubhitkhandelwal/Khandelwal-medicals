@@ -34,7 +34,7 @@ async function loadProducts() {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
-      const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/products', {
+      const res = await fetch('https://api.khandelwalmedicals.in/api/products', {
         signal: controller.signal
       });
       clearTimeout(timeout);
@@ -699,7 +699,7 @@ Object.entries(cart).forEach(([id, value]) => {
 });
 
   try {
-    const res = await fetch('https://khandelwal-medicals-production.up.railway.app/api/orders', {
+    const res = await fetch('https://api.khandelwalmedicals.in/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
