@@ -278,25 +278,21 @@ function refresh() {
 
 function updateProductButtons() {
   PRODUCTS.forEach(p => {
-    const cards = document.querySelectorAll('.product-card');
-    cards.forEach(card => {
-      const nameEl = card.querySelector('.prod-name');
-      if (!nameEl || nameEl.textContent !== p.name) return;
-      const disc = Math.round((p.mrp - p.price) / p.mrp * 100);
-      const qty = cart[p.id] || 0;
-      const ctaEl = card.querySelector('.btn-outline, .qty-control, .oos-badge');
-      if (!ctaEl) return;
-      const newCta = !p.inStock
-        ? `<span class="oos-badge">Out of stock</span>`
-        : qty === 0
-          ? `<button class="btn-outline" onclick="addToCart('${p.id}')">🛒 Add to cart</button>`
-          : `<div class="qty-control">
-               <button class="qty-btn" onclick="changeQty('${p.id}',-1)">−</button>
-               <span class="qty-num">${qty}</span>
-               <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
-             </div>`;
-      ctaEl.outerHTML = newCta;
-    });
+    const card = document.querySelector(`.product-card[data-id="${p.id}"]`);
+    if (!card) return;
+    const qty = cart[p.id] || 0;
+    const ctaEl = card.querySelector('.btn-outline, .qty-control, .oos-badge');
+    if (!ctaEl) return;
+    const newCta = !p.inStock
+      ? `<span class="oos-badge">Out of stock</span>`
+      : qty === 0
+        ? `<button class="btn-outline" onclick="addToCart('${p.id}')">🛒 Add to cart</button>`
+        : `<div class="qty-control">
+             <button class="qty-btn" onclick="changeQty('${p.id}',-1)">−</button>
+             <span class="qty-num">${qty}</span>
+             <button class="qty-btn" onclick="changeQty('${p.id}',1)">+</button>
+           </div>`;
+    ctaEl.outerHTML = newCta;
   });
 }
 
@@ -452,7 +448,7 @@ function renderProducts() {
            </div>`;
 
     return `
-      <div class="product-card">
+      <div class="product-card" data-id="${p.id}">
         ${p.imageUrl
           ? `<img src="${optimizeImage(p.imageUrl)}" class="prod-img" loading="lazy" style="cursor:zoom-in" onclick="openImgZoom('${p.imageUrl}')" onerror="this.style.display='none'" />`
           : `<div class="prod-icon">💊</div>`}
